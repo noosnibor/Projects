@@ -13,8 +13,8 @@ public class RoleRepository(IConfiguration configuration)
     public async Task<Guid> GetRoleIdByName(string name)
     {
         // Generate script to select a user Id
-        string script = "SELECT Id" +
-                        "FROM [tblRole] r" +
+        string script = "SELECT Id " +
+                        "FROM [tblRole] r " +
                         "WHERE r.Name = @Name";
 
         // Retrieve the result from the db
@@ -29,8 +29,8 @@ public class RoleRepository(IConfiguration configuration)
     public async Task AssignRoles(Guid userId, Guid roleId)
     {
         // Generate script to select a user Id
-        string script = "IF NOT EXISTS (SELECT 1 FROM [tblUserRoles] WHERE UserId = @UserId AND RoleId = @RoleId)" +
-                        "INSERT INTO tblUserRoles (UserId, RoleId)" +
+        string script = "IF NOT EXISTS (SELECT 1 FROM [tblUserRoles] WHERE UserId = @UserId AND RoleId = @RoleId) " +
+                        "INSERT INTO tblUserRoles (UserId, RoleId) " +
                         "VALUES (@UserId, @RoleId)";
 
         // Insert data in user role db

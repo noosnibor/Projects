@@ -11,22 +11,25 @@ public class UserRepository(IConfiguration configuration)
     #endregion;
 
     #region Get user by email
-    public async Task<List<UserModel>> GetByEmail(string email)
+    public async Task<UserModel> GetByEmail(string email)
     {
-        string script = "SELECT *" +
-                        "FROM [tblUsers] u" +
-                        "WHERE u.Email = @Email";
-        return await _db.GetAsync<UserModel, dynamic>(script, CommandType.Text, new { Email = email });
+        string script = "SELECT * FROM tblUsers WHERE Email = @Email";
+
+        List<UserModel> result =  await _db.GetAsync<UserModel, dynamic>(script, CommandType.Text, new { Email = email });
+
+        return result.FirstOrDefault()!;
     }
     #endregion
 
     #region Get user by Id
-    public async Task<List<UserModel>> GetById(Guid id)
+    public async Task<UserModel> GetById(Guid id)
     {
         string script = "SELECT *" +
                         "FROM [tblUsers] u" +
                         "WHERE u.Id = @Id";
-        return await _db.GetAsync<UserModel, dynamic>(script, CommandType.Text, new { Id = id });
+        List<UserModel> result =  await _db.GetAsync<UserModel, dynamic>(script, CommandType.Text, new { Id = id });
+
+        return result.FirstOrDefault()!;
     }
     #endregion
 
@@ -49,8 +52,8 @@ public class UserRepository(IConfiguration configuration)
     public async Task ConfirmEmail(Guid userId)
     {
         // Generate script to update a user
-        string script = "UPDATE [tblUsers]" +
-                        "SET EmailConfirmed = 1, UpdateAt = SYSUTCDATETIME()" +
+        string script = "UPDATE [tblUsers] " +
+                        "SET EmailConfirmed = 1, UpdateAt = SYSUTCDATETIME() " +
                         "WHERE Id = @UserId";
 
         // Update user in the db
@@ -68,6 +71,20 @@ public class UserRepository(IConfiguration configuration)
 
         // Update user in the db
         await _db.UpdateAsync(script, CommandType.Text, new { UserId = userId, Hash = hash });
+    }
+    #endregion
+
+    #region Get role name
+    public async Task<IEnumerable<string>> GetRoleName(Guid userId)
+    {
+        // Generate script to update a user
+        string script = "SELECT r.Name FROM [tblRole] r" +
+                        "INNER JOIN [tblUserRoles] ur" +
+                        "ON ur.RoleId = r.Id" +
+                        "WHERE ur.RoleId = @UserId";
+
+        // Update user in the db
+        return await _db.GetAsync<string, dynamic>(script, CommandType.Text, new { UserId = userId });
     }
     #endregion
 }

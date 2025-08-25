@@ -1,8 +1,8 @@
 ﻿using DataAccess.Library;
 using System.Data;
-using Web.Api.Domain;
-using System.Text;
 using System.Security.Cryptography;
+using System.Text;
+using Web.Api.Domain;
 
 namespace Web.Api.Data;
 
@@ -56,7 +56,7 @@ public class TokenRepository(IConfiguration configuration)
                         "SET RevokedAt = SYSUTCDATETIME(), ReplacedByTokenHash = @NewHash" +
                         "WHERE Id = @Id";
 
-        // Retrieve the result from the db
+        // Update the result from the db
         await _db.UpdateAsync(script, CommandType.Text, new { Id = currentToken, NewHashId = Hash(newToken) });
     }
     #endregion
@@ -69,8 +69,56 @@ public class TokenRepository(IConfiguration configuration)
                         "SET RevokedAt = SYSUTCDATETIME()" +
                         "WHERE UserId = @UserId AND RevokedAt IS NULL AND (@Device IS NULL OR Device = @Device)";
 
-        // Retrieve the result from the db
+        // Update the result from the db
         await _db.UpdateAsync(script, CommandType.Text, new { UserId = userId, Device = device });
+    }
+    #endregion
+
+    #region Add One-time token for email confirm and password reset
+    public async Task AddOneTimeToken(Guid userId, string purpose, string token, DateTime expires)
+    {
+        // Generate script to select a user Id
+        string script = "INSERT INTO [tblOneTimeToken] (UserId, Purpose, TokenHash, ExpiresAt) " +
+                        "VALUES (@UserId, @Purpose, @TokenHash, @ExpiresAt)";
+
+        // Add the result from the db
+        await _db.AddAsync(script, CommandType.Text, new { UserId = userId, Purpose = purpose, TokenHash = Hash(token), ExpiresAt = expires });
+    }
+    #endregion
+
+    #region Consume the one time token
+    public async Task<(OneTimeTokenModel? token, Guid? userId)> ConsumeOneTimeToken(string purpose, string token)
+    {
+        // Generate script to select a user Id
+        string script = "SELECT TOP 1 * " +
+                        "FROM tblOneTimeToken o " +
+                        "WHERE o.Purpose = @Purpose AND o.TokenHash = @TokenHash AND o.ConsumedAt IS NULL AND o.ExpiresAt > SYSUTCDATETIME() ";
+
+        // Retrieve the result from the db
+        var result = await _db.GetAsync<OneTimeTokenModel, dynamic>(script, CommandType.Text, new { Purpose = purpose, TokenHash = Hash(token) });
+
+        // Check if the result is null
+        if (result is null)
+        {
+            return (null, null);
+        }
+        else
+        {
+            // Generate script to select a user Id
+            string updateScript = "Update [tblOneTimeToken] " +
+                                  "SET ConsumedAt = SYSUTCDATETIME() " +
+                                  "WHERE Id = @Id";
+
+            // Update the result from the db
+            await _db.UpdateAsync(updateScript, CommandType.Text, new { result.FirstOrDefault()?.Id });
+
+            // Return the token  
+            return (result.FirstOrDefault(), result.FirstOrDefault()?.UserId);
+        }
+
+        
+
+        
     }
     #endregion
 }
