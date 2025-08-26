@@ -66,8 +66,13 @@
     <Build Include="dbo\Table\tblUserRoles.sql" />
     <Build Include="dbo\Table\tblRefreshTokens.sql" />
     <Build Include="dbo\Table\tblOneTimeToken.sql" />
+    <Build Include="dbo\Stored Procedure\GetRoleIdByName.sql" />
+    <Build Include="dbo\Stored Procedure\AssignRole.sql" />
   </ItemGroup>
   <ItemGroup>
     <None Include="db.publish.xml" />
+  </ItemGroup>
+  <ItemGroup>
+    <RefactorLog Include="db.refactorlog" />
   </ItemGroup>
 </Project>

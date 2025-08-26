@@ -1,13 +1,13 @@
 ﻿CREATE TABLE [dbo].[tblRefreshTokens]
 (
-	[Id] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(), 
-    [UserId] UNIQUEIDENTIFIER NOT NULL, 
-    [TokenHash] VARBINARY(64) NOT NULL, 
-    [IssueAt] DATETIME2 NOT NULL, 
-    [ExpiresAt] DATETIME2 NOT NULL, 
-    [Device] NVARCHAR(200) NULL, 
-    [IpAddress] NVARCHAR(64) NULL, 
-    [RevokedAt] DATETIME2 NULL, 
-    [ReplacedByTokenHash] VARBINARY(64) NULL,
-    FOREIGN KEY (UserId) REFERENCES tblUsers(Id) ON DELETE CASCADE
+	[flngRefreshKey] UNIQUEIDENTIFIER NOT NULL PRIMARY KEY DEFAULT NEWID(), 
+    [flngUserKey] UNIQUEIDENTIFIER NOT NULL, 
+    [fstrTokenHash] VARBINARY(64) NOT NULL, 
+    [fdtmIssueAt] DATETIME2 NOT NULL, 
+    [fdtmExpiresAt] DATETIME2 NOT NULL, 
+    [fstrDevice] NVARCHAR(200) NULL, 
+    [fstrIpAddress] NVARCHAR(64) NULL, 
+    [fdtmRevokedAt] DATETIME2 NULL, 
+    [fstrReplacedByTokenHash] VARBINARY(64) NULL,
+    FOREIGN KEY ([flngUserKey]) REFERENCES tblUsers([flngUserKey]) ON DELETE CASCADE
 )
